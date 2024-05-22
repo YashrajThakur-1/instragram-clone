@@ -9,11 +9,11 @@ router.post("/toggle-like", jsonAuthMiddleware, async (req, res) => {
     const user_id = req.user.userData.id;
 
     // Check if the user has already liked the post
-    const dddddddd = await Like.findOne({ post_id, user_id });
+    const existingInteraction = await Like.findOne({ post_id, user_id });
 
-    if (dddddddd) {
+    if (existingInteraction) {
       // If the user has already liked the post, remove the like
-      await dddddddd.remove();
+      await Like.deleteOne({ _id: existingInteraction._id });
       return res.json({ message: "Like removed" });
     } else {
       // If the user has not liked the post, add a new like
@@ -22,6 +22,7 @@ router.post("/toggle-like", jsonAuthMiddleware, async (req, res) => {
       res.status(201).json(newLike);
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: err.message });
   }
 });
