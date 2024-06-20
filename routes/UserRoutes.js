@@ -27,6 +27,7 @@ router.post("/register", upload.single("profile_picture"), async (req, res) => {
     const { username, email, password, bio } = req.body;
     const profile_picture = req.file ? req.file.filename : null;
     console.log("file", req.file);
+
     const newUser = new User({
       username,
       email,
@@ -34,9 +35,15 @@ router.post("/register", upload.single("profile_picture"), async (req, res) => {
       profile_picture,
       bio,
     });
-    console.log("newUser", newUser);
+
     await newUser.save();
-    res.status(201).json(newUser);
+    const token = generateToken({ id: newUser._id });
+    res.status(201).json({
+      message: "User added successfully!",
+      status: "true",
+      user: newUser,
+      token: token,
+    });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

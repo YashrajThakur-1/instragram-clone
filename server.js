@@ -19,7 +19,7 @@ const postRoutes = require("./routes/PostRoutes");
 const commentRoutes = require("./routes/CommentRoutes");
 const likeRoutes = require("./routes/LikeRoutes");
 const port = 3001;
-app.use("/api", userRoutes);
+app.use("/api/v1", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/api", commentRoutes);
 app.use("/api", likeRoutes);
