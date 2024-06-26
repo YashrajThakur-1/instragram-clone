@@ -48,10 +48,11 @@ router.post(
   ]),
   async (req, res) => {
     try {
-      const user_id = req.user.userData.id;
-      console.log("first", req.user.userData.id);
-      const { caption, location } = req.body;
+      // Extract user information from req.user.userData
+      const { id: user_id, userName, profile_picture } = req.user.userData;
+      const { caption, location, hastag, tagged_users } = req.body;
 
+      // Extract and map filenames of uploaded files
       const images = req.files["images"]
         ? req.files["images"].map((file) => file.filename)
         : [];
@@ -59,23 +60,43 @@ router.post(
         ? req.files["videos"].map((file) => file.filename)
         : [];
 
+      // Check if both images and videos are provided
+      if (images.length > 0 && videos.length > 0) {
+        return res.status(400).json({
+          error: "You can only upload either images or videos, not both.",
+        });
+      }
+
+      // Determine the post media type
+      let post_media = [];
+      if (images.length > 0) {
+        post_media = images;
+      } else if (videos.length > 0) {
+        post_media = videos;
+      }
+
+      // Create a new post object
       const newPost = new Post({
-        user_id: user_id,
-        images: images,
-        videos: videos,
-        caption: caption,
-        location: location,
+        user_id,
+        userName,
+        profile_picture,
+        post_media,
+        caption,
+        location,
+        hastag,
       });
 
+      // Save the new post to the database
       const savedPost = await newPost.save();
 
+      // Respond with the saved post data
       res.status(201).json(savedPost);
     } catch (error) {
+      // Handle errors and respond with appropriate status and message
       res.status(400).json({ error: error.message });
     }
   }
 );
-
 // Route to get all posts
 router.get("/", async (req, res) => {
   try {
@@ -89,7 +110,5 @@ router.get("/", async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
-
-// Additional routes for updating and deleting posts can be added similarly
 
 module.exports = router;

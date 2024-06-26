@@ -37,7 +37,7 @@ router.post("/register", upload.single("profile_picture"), async (req, res) => {
     });
 
     await newUser.save();
-    const token = generateToken({ id: newUser._id });
+    const token = generateToken(newUser);
     res.status(201).json({
       message: "User added successfully!",
       status: "true",
@@ -182,6 +182,48 @@ router.delete("/users/:id", jsonAuthMiddleware, async (req, res) => {
     res.json({ message: "User deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+router.post("/toggle-follow/:id", jsonAuthMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userData.id; // The ID of the logged-in user
+    const targetUserId = req.params.id; // The ID of the user to follow/unfollow
+
+    // Check if the user is trying to follow/unfollow themselves
+    if (userId === targetUserId) {
+      return res
+        .status(400)
+        .json({ error: "You cannot follow/unfollow yourself." });
+    }
+
+    // Find both users
+    const user = await User.findById(userId);
+    const targetUser = await User.findById(targetUserId);
+
+    // Check if the user is already following the target user
+    const isFollowing = user.following.includes(targetUserId);
+
+    if (isFollowing) {
+      // Unfollow the user
+      user.following.pull(targetUserId);
+      targetUser.followers.pull(userId);
+      await user.save();
+      await targetUser.save();
+      res
+        .status(200)
+        .json({ message: `You have unfollowed ${targetUser.username}.` });
+    } else {
+      // Follow the user
+      user.following.push(targetUserId);
+      targetUser.followers.push(userId);
+      await user.save();
+      await targetUser.save();
+      res
+        .status(200)
+        .json({ message: `You are now following ${targetUser.username}.` });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

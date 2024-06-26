@@ -8,18 +8,18 @@ const postSchema = new Schema({
     ref: "User",
     required: true,
   },
-  images: [
-    {
-      type: String,
-      required: false,
-    },
-  ],
-  videos: [
-    {
-      type: String,
-      required: false,
-    },
-  ],
+  user_name: {
+    type: String,
+    required: true,
+  },
+  profile_picture: {
+    type: String,
+    required: true,
+  },
+  post_media: {
+    type: [String], // Changed to array to store multiple file names
+    required: true,
+  },
   caption: {
     type: String,
     required: false,
@@ -28,6 +28,15 @@ const postSchema = new Schema({
     type: String,
     required: false,
   },
+  hashtag: {
+    type: String,
+  },
+  tagged_users: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   created_at: {
     type: Date,
     default: Date.now,
