@@ -25,8 +25,10 @@ const upload = multer({ storage: storage });
 router.post("/register", upload.single("profile_picture"), async (req, res) => {
   try {
     const { username, email, password, bio } = req.body;
+    console.log("Req body>>>>>>>>>>>", req.body);
+
     const profile_picture = req.file ? req.file.filename : null;
-    console.log("file", req.file);
+    console.log("File>>>>>>>>>>>", profile_picture);
 
     const newUser = new User({
       username,
@@ -38,6 +40,8 @@ router.post("/register", upload.single("profile_picture"), async (req, res) => {
 
     await newUser.save();
     const token = generateToken(newUser);
+
+    console.log("token>>>>>>>>>>", token);
     res.status(201).json({
       message: "User added successfully!",
       status: "true",
@@ -45,6 +49,7 @@ router.post("/register", upload.single("profile_picture"), async (req, res) => {
       token: token,
     });
   } catch (err) {
+    console.log("Error>>>>>", err.message);
     res.status(400).json({ message: err.message });
   }
 });
