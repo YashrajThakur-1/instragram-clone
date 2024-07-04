@@ -22,26 +22,36 @@ const upload = multer({ storage: storage });
 
 router.get("/stories", jsonAuthMiddleware, async (req, res) => {
   try {
+    // Get the current user's ID from the authenticated request
     const currentUserId = req.user.userData._id;
 
-    // Get the list of users that the current user follows
+    // Find the current user and populate the 'following' field
     const currentUser = await User.findById(currentUserId).populate(
       "following"
     );
+
+    // Get the list of IDs of the users that the current user follows
     const followingIds = currentUser.following.map((user) => user._id);
 
-    // Fetch stories posted by users that the current user follows
+    // Include the current user's ID in the list of IDs
+    const userIdsToFetchStories = [currentUserId, ...followingIds];
+
+    // Fetch stories posted by the current user and users that the current user follows
+    // Ensure that the stories have not expired
     const stories = await Story.find({
-      user: { $in: followingIds },
+      user: { $in: userIdsToFetchStories },
       expiresAt: { $gt: new Date() }, // Ensure the story is not expired
     }).populate("user");
 
+    // Respond with the fetched stories
     res.status(200).json(stories);
   } catch (error) {
+    // Log the error and respond with a 500 status code
     console.error(error);
     res.status(500).json({ message: "Error fetching stories" });
   }
 });
+
 router.post(
   "/stories",
   jsonAuthMiddleware,
@@ -49,6 +59,7 @@ router.post(
   async (req, res) => {
     try {
       const currentUserId = req.user.userData._id;
+      console.log("UserId ");
       const { caption } = req.body;
       const media = req.file ? req.file.path : null;
 
