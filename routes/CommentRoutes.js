@@ -1,7 +1,6 @@
 const express = require("express");
 const Comment = require("../model/CommentSchema");
 const router = express.Router();
-// const Comment = require("./models/Comment"); // Adjust the path as necessary
 
 // Create a new comment
 router.post("/comments", async (req, res) => {

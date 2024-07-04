@@ -18,11 +18,13 @@ const userRoutes = require("./routes/UserRoutes");
 const postRoutes = require("./routes/PostRoutes");
 const commentRoutes = require("./routes/CommentRoutes");
 const likeRoutes = require("./routes/LikeRoutes");
+const StoryRoutes = require("./routes/StoryRoutes");
 const port = 3001;
 app.use("/api/v1", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/api", commentRoutes);
 app.use("/api", likeRoutes);
+app.use("/api", StoryRoutes);
 app.listen(port, () => {
   console.log(`Server Running On Port ${port}`);
 });

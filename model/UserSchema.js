@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema(
   {
@@ -19,17 +19,21 @@ const userSchema = new mongoose.Schema(
     },
     profile_picture: String,
     bio: String,
-    // created_at: {
-    //   type: Date,
-    //   default: Date.now,
-    // },
-    // updated_at: {
-    //   type: Date,
-    //   default: Date.now,
-    // },
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    following: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically adds createdAt and updatedAt fields
   }
 );
 
@@ -47,7 +51,7 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-// Password comparison method
+// Password comparison methodsssss
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
