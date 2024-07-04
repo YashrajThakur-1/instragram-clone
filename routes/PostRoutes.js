@@ -77,14 +77,18 @@ router.post(
 );
 
 // Route to get all posts
-router.get("/", async (req, res) => {
+router.get("/getpost", async (req, res) => {
   try {
     const posts = await Post.find()
       .populate("user_id", "username") // Assuming you have a username field in the User model
       .populate("comments")
       .populate("likes");
 
-    res.status(200).json(posts);
+    res.status(200).json({
+      message: "Posts fetched successfully!",
+      status: true,
+      posts: posts,
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
