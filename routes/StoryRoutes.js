@@ -22,22 +22,16 @@ const upload = multer({ storage: storage });
 
 router.get("/stories", jsonAuthMiddleware, async (req, res) => {
   try {
-    // Get the current user's ID from the authenticated request
     const currentUserId = req.user.userData._id;
 
-    // Find the current user and populate the 'following' field
     const currentUser = await User.findById(currentUserId).populate(
       "following"
     );
 
-    // Get the list of IDs of the users that the current user follows
     const followingIds = currentUser.following.map((user) => user._id);
 
-    // Include the current user's ID in the list of IDs
     const userIdsToFetchStories = [currentUserId, ...followingIds];
 
-    // Fetch stories posted by the current user and users that the current user follows
-    // Ensure that the stories have not expired
     const stories = await Story.find({
       user: { $in: userIdsToFetchStories },
       expiresAt: { $gt: new Date() }, // Ensure the story is not expired
