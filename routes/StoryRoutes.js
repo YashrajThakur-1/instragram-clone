@@ -28,7 +28,7 @@ router.get("/stories", jsonAuthMiddleware, async (req, res) => {
     const currentUser = await User.findById(currentUserId).populate(
       "following"
     );
-    const followingIds = currentUser.following.map((user) => user._id);
+    const followingIds = currentUser?.following?.map((user) => user._id);
 
     // Fetch stories posted by users that the current user follows
     const stories = await Story.find({
@@ -48,7 +48,8 @@ router.post(
   upload.single("media"),
   async (req, res) => {
     try {
-      const currentUserId = req.user.userData._id;
+      const currentUserId = req?.user?.userData._id;
+      console.log(currentUserId);
       const { caption } = req.body;
       const media = req.file ? req.file.path : null;
 
