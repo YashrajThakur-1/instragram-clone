@@ -18,6 +18,10 @@ const storySchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    finish: {
+      type: String,
+      default: 0,
+    },
     expiresAt: {
       type: Date,
       required: true,
