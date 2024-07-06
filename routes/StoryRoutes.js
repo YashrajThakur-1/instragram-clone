@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const { jsonAuthMiddleware } = require("../authorization/auth");
 const multer = require("multer");
+const fs = require("fs");
 const User = require("../model/UserSchema");
 const Story = require("../model/StorySchema");
 
@@ -51,17 +52,36 @@ router.post(
   async (req, res) => {
     try {
       const currentUserId = req.user.userData._id;
-      console.log("UserId ");
       const { caption } = req.body;
-      const media = req.file ? req.file.path : null;
-
-      if (!media) {
+      const mediaPath = req.file ? `uploads/${req.file.filename}` : null; // Fix the file path
+      console.log("req.file", req.file);
+      if (!mediaPath) {
         return res.status(400).json({ message: "Media file is required" });
+      }
+
+      const fileBuffer = fs.readFileSync(mediaPath);
+      const fileType = await import("file-type");
+      const mime = await fileType.fileTypeFromBuffer(fileBuffer);
+      console.log("Detected MIME type:", mime);
+
+      if (!mime) {
+        return res
+          .status(400)
+          .json({ message: "Unable to determine file type" });
+      }
+
+      let mediaType = "";
+      if (mime.mime.startsWith("image/")) {
+        mediaType = "image";
+      } else if (mime.mime.startsWith("video/")) {
+        mediaType = "video";
+      } else {
+        return res.status(400).json({ message: "Unsupported file type" });
       }
 
       const story = new Story({
         user: currentUserId,
-        media: media,
+        media: [{ url: req.file.filename, type: mediaType }], // Save only the filename
         caption: caption,
         expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours from now
       });
@@ -75,5 +95,32 @@ router.post(
     }
   }
 );
+
+// New route to increment views
+router.post("/stories/:id/view", jsonAuthMiddleware, async (req, res) => {
+  try {
+    const storyId = req.params.id;
+    const currentUserId = req.user.userData._id;
+    const story = await Story.findById(storyId);
+
+    if (!story) {
+      return res.status(404).json({ message: "Story not found" });
+    }
+
+    // Check if the user has already viewed the story
+    if (!story.views.includes(currentUserId)) {
+      story.views.push(currentUserId);
+    }
+
+    await story.save();
+
+    res
+      .status(200)
+      .json({ message: "View count incremented", views: story.views.length });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error incrementing view count" });
+  }
+});
 
 module.exports = router;

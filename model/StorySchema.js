@@ -1,5 +1,22 @@
 const mongoose = require("mongoose");
 
+const mediaSchema = new mongoose.Schema(
+  {
+    url: {
+      type: String, // URL or path to the media (image or video)
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: ["image", "video"], // Type of media
+      required: true,
+    },
+  },
+  {
+    _id: false, // This disables the creation of an _id field for each media object
+  }
+);
+
 const storySchema = new mongoose.Schema(
   {
     user: {
@@ -8,7 +25,7 @@ const storySchema = new mongoose.Schema(
       required: true,
     },
     media: {
-      type: String, // URL or path to the story media (image or video)
+      type: [mediaSchema], // Array of media objects
       required: true,
     },
     caption: String,
@@ -16,6 +33,7 @@ const storySchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        default: 0,
       },
     ],
     finish: {
