@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema(
     },
     profile_picture: String,
     bio: String,
+    isUser: {
+      type: String,
+      enum: ["Public", "Private"],
+      Default: "Public",
+    },
     followers: [
       {
         type: mongoose.Schema.Types.ObjectId,

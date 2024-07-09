@@ -22,6 +22,7 @@ const upload = multer({ storage: storage });
 
 router.get("/stories", jsonAuthMiddleware, async (req, res) => {
   try {
+    console.log("req.user", req.user);
     const currentUserId = req.user.userData._id;
     const currentUser = await User.findById(currentUserId).populate(
       "following"
@@ -51,6 +52,8 @@ router.post(
   upload.single("media"),
   async (req, res) => {
     try {
+      console.log("req.user", req.user);
+
       const currentUserId = req.user.userData._id;
       const { caption } = req.body;
       const mediaPath = req.file ? `uploads/${req.file.filename}` : null; // Fix the file path

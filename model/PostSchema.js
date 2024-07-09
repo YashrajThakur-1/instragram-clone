@@ -37,6 +37,7 @@ const postSchema = new Schema({
       ref: "User",
     },
   ],
+
   created_at: {
     type: Date,
     default: Date.now,
