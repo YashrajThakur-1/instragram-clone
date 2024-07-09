@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
     },
     profile_picture: String,
     bio: String,
-    isUser: {
+    isAccount: {
       type: String,
       enum: ["Public", "Private"],
       Default: "Public",

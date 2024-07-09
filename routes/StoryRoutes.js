@@ -125,5 +125,35 @@ router.post("/stories/:id/view", jsonAuthMiddleware, async (req, res) => {
     res.status(500).json({ message: "Error incrementing view count" });
   }
 });
+router.get("/following-stories", jsonAuthMiddleware, async (req, res) => {
+  try {
+    const currentUserId = req.user.userData._id;
 
+    const currentUser = await User.findById(currentUserId).populate(
+      "following"
+    );
+
+    const followingIds = currentUser.following.map((user) => user._id);
+
+    const userIdsToFetchStories = [currentUserId, ...followingIds];
+    const stories = await Story.find({
+      user: { $in: userIdsToFetchStories },
+      expiresAt: { $gt: new Date() }, // Ensure the story is not expired
+    }).populate("user");
+
+    // Respond with the fetched stories
+    res.status(200).json({
+      message: "Data fetched successfully!",
+      status: true,
+      following: currentUser.following,
+      stories: stories,
+    });
+  } catch (error) {
+    // Log the error and respond with a 500 status code
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error fetching following list and stories" });
+  }
+});
 module.exports = router;

@@ -5,6 +5,8 @@ const multer = require("multer");
 const path = require("path");
 const Post = require("../model/PostSchema");
 const { jsonAuthMiddleware } = require("../authorization/auth");
+const User = require("../model/UserSchema");
+
 // Set storage engine
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -112,6 +114,24 @@ router.get("/getpost", async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+router.get("/reels", async (req, res) => {
+  try {
+    // Find all public account users
+    const publicUsers = await User.find({ isAccount: "Public" });
+
+    // Extract their IDs
+    const publicUserIds = publicUsers.map((user) => user._id);
+
+    // Find all reels of public account users
+    const reels = await Post.find({ userId: { $in: publicUserIds } });
+
+    // Send the reels as a response
+    res.status(200).json(reels);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
